@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ko" lang="ko">
+<head>
+<title>Cross-Browser QRCode generator for Javascript</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<script type="text/javascript" src="jquery.min.js"></script>
+<!---->
+<script type="text/javascript" src="qrcode.js"></script>
+<script type="text/javascript" src="reqrcode.js"></script>
+</head>
+<body>
+<input id="text" type="text" value="http://jindo.dev.naver.com/collie" style="width:80%" /><br />
+<input id="newfile" type="file" style="width:80%" /><br />
+<div id="qrcode" style="width:256px; height:256px; margin-top:15px;"></div>
+<img id="upload" style="width:256px; height:256px; margin-top:15px;"></img>
+
+<script type="text/javascript">
+var qrcode_ = new QRCode(document.getElementById("qrcode"), {
+	width : 256,
+	height : 256
+});
+
+function makeCode () {		
+	var elText = document.getElementById("text");
+	
+	if (!elText.value) {
+		alert("Input a text");
+		elText.focus();
+		return;
+	}
+	
+	qrcode_.makeCode(elText.value);
+}
+function getUrl (file){
+    var url = null ; 
+    if (window.createObjectURL!=undefined) { // basic
+        url = window.createObjectURL(file) ;
+    } else if (window.URL!=undefined) { // mozilla(firefox)
+        url = window.URL.createObjectURL(file) ;
+    } else if (window.webkitURL!=undefined) { // webkit or chrome
+        url = window.webkitURL.createObjectURL(file) ;
+    }
+    return url ;
+}
+
+makeCode();
+
+$("#text").
+	on("blur", function () {
+		makeCode();
+	}).
+	on("keydown", function (e) {
+		if (e.keyCode == 13) {
+			makeCode();
+		}
+	});
+$("#newfile").
+	on('change', function(){
+		console.log($(this)[0].files[0])
+		console.log(newfile.files[0])
+		qrcode.decode(getUrl(this.files[0]))
+		qrcode.callback = function(imgMsg){
+			console.log("imgMsg",imgMsg);
+		}
+		if (newfile.files && newfile.files[0]) {
+			var reader = new FileReader()
+			reader.onload = function(e) {
+				$('#upload').attr('src', e.target.result)
+			}
+			reader.readAsDataURL(newfile.files[0])
+		}
+	})
+$('img').
+	on('click', function(e){
+		console.log(e.currentTarget)
+		var file = utils.img2File(e.currentTarget)
+		console.log(file)
+		qrcode.decode(getUrl(file))
+		qrcode.callback = function(imgMsg){
+			console.log("imgMsg",imgMsg);
+		}
+	})
+var utils = {
+	img2File: function(img) {
+		var canvas = document.createElement('canvas');
+		canvas.setAttribute('width', img.width)
+		canvas.setAttribute('height', img.height)
+		var context = canvas.getContext('2d')
+		context.drawImage(img, 0, 0, img.width, img.height)
+		var uricode = canvas.toDataURL("images/png",1.0);
+		var that = this
+		var blobs = that.urltoblob(uricode)
+		blobs.lastModifiedDate = new Date()
+		blobs.name = '1.png';
+		return blobs
+	},
+	urltoblob: function(data) {
+		var BASE64_MARKER = ';base64,'
+		if (data.indexOf(BASE64_MARKER) == -1) {
+			var parts = data.split(',')
+			var contentType = parts || parts[0].split(':')[1];
+			var raw = decodeURIComponent(parts[0])
+			return new Blob([raw], {type: contentType})
+		}
+		var parts = data.split(BASE64_MARKER)
+		var contentType = parts || parts[0].split(':')[1];
+		var raw = atob(parts[1])
+		var rawLength = raw.length
+		var array = new Uint8Array(rawLength)
+		for (var i = 0; i < rawLength; i++) {
+			array[i] = raw.charCodeAt(i)
+		}
+		return new Blob([raw], {type: contentType})
+	}
+}
+</script>
+</body>
