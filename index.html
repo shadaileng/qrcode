@@ -75,11 +75,10 @@ $('img').
 	on('click', function(e){
 		console.log(e.currentTarget)
 		var file = utils.img2File(e.currentTarget)
-		console.log(file)
-		qrcode.decode(getUrl(file))
 		qrcode.callback = function(imgMsg){
 			console.log("imgMsg",imgMsg);
 		}
+		
 	})
 var utils = {
 	img2File: function(img) {
@@ -88,12 +87,32 @@ var utils = {
 		canvas.setAttribute('height', img.height)
 		var context = canvas.getContext('2d')
 		context.drawImage(img, 0, 0, img.width, img.height)
+		try {
+			qrcode.imagedata = context.getImageData(0, 0, img.width, img.height)
+		} catch(m) {
+			qrcode.result = "Cross domain image reading not supported in your browser! Save it to your computer then drag and drop the file!";
+			if (qrcode.callback != null) {
+				qrcode.callback(qrcode.result)
+			}
+			return
+		}
+		try {
+			qrcode.result = qrcode.process(context)
+		} catch (m) {
+			console.log(m);
+			qrcode.result = "error decoding QR Code"
+		}
+		if (qrcode.callback != null) {
+			qrcode.callback(qrcode.result)
+		}
+		/*
 		var uricode = canvas.toDataURL("images/png",1.0);
 		var that = this
 		var blobs = that.urltoblob(uricode)
 		blobs.lastModifiedDate = new Date()
 		blobs.name = '1.png';
 		return blobs
+		*/
 	},
 	urltoblob: function(data) {
 		var BASE64_MARKER = ';base64,'
