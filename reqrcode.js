@@ -1537,6 +1537,7 @@ qrcode.process = function (q) {
         }
         q.putImageData(qrcode.imagedata, 0, 0)
     }
+//	console.log(p.bits)
     var k = Decoder.decode(p.bits);
     var g = k.DataByte;
     var l = "";
