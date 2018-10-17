@@ -77,7 +77,37 @@ $('img').
 		var file = utils.img2code(e.currentTarget)
 		console.log(file)
 	})
+document.addEventListener('paste', pastepic)
+function pastepic(event){
+	var clipboardData = event.clipboardData || event.originalEvent
+	if (clipboardData && clipboardData.items) {
+		var items = clipboardData.items
+		var blob = null
+		for(let i = 0, l = items.length; i < l; i++) {
+			console.log(items[i])
+			if(items[i].type.indexOf('image') >= 0) {
+				blob = items[i].getAsFile()
+				console.log(URL.createObjectURL(blob))
+				document.querySelector('#upload').src = URL.createObjectURL(blob)
+//				utils.showpic2id(blob, '#upload')
+			} else if (items[i].type.indexOf('text') >= 0) {
+				items[i].getAsString(
+					(msg)=>{
+						console.log(msg)
+						document.querySelector('#text').value = msg
+					})
+			}
+		}
+	}
+}
 var utils = {
+	showpic2el: function(flie, selector) {
+		var reader = new FileReader()
+		reader.onload = function(e) {
+			document.querySelector(selector).src = e.target.result
+		}
+		reader.readAsDataURL(flie)
+	},
 	img2code: function(img) {
 		var canvas = document.createElement('canvas');
 		canvas.setAttribute('width', img.width)
