@@ -3,8 +3,12 @@
 		Game = {
 			tickLength: 16, 				// 20Hz
 			lastTick: performance.now(),	// 最后更新时间
-			stopKey: 0
+			stopKey: 0,
+			canvas: null,
+			context: null,
 		}
+		Game.canvas = document.querySelector('#canvas')
+		Game.context = Game.canvas ? Game.canvas.getContext('2d') : null
 	}
 	function updateBatch(tickNum) {
 		for(let i = 0; i < tickNum; i++) {
@@ -13,10 +17,11 @@
 		}
 	}
 	function update(lastTick) {
-		console.log('update: ' + lastTick)
+//		console.log('update: ' + lastTick)
 	}
 	function render(tFrame) {
-		
+		Game.context.fillStyle = '#34ff88'
+		Game.context.fillRect(10, 10, 100, 100)
 	}
 	function main(tFrame) {
 		Game.stopKey = requestAnimationFrame(main)
